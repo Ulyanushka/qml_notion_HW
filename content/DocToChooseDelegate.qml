@@ -14,8 +14,10 @@ ItemDelegate {
 
         Label {
             text: delegate.title
-            //font.pixelSize: 30
+            background: Rectangle { color: "#dbd6ab" }
+            font.pixelSize: 25
             font.bold: true
+            wrapMode: Text.Wrap
             elide: Text.ElideRight
             Layout.fillWidth: true
         }
