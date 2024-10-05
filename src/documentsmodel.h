@@ -49,6 +49,7 @@ private:
         QString title;
         QString first_sentence;
         QString path;
+        //here should be the list of abstract blockss
     };
     QList<Document> documents_;
 };

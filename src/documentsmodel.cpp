@@ -20,7 +20,7 @@ const QList<QStringList> documents_start_data {
 DocumentsModel::DocumentsModel(QObject* parent ) : QAbstractListModel(parent)
 {
     for (const auto& doc : documents_start_data) {
-        documents_.append({doc[TitleRole], doc[FirstSentenceRole], doc[PathRole]});
+        documents_.append({doc[0], doc[1], doc[2]});
     }
 }
 

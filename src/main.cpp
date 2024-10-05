@@ -11,6 +11,7 @@
 int main(int argc, char *argv[])
 {
     set_qt_environment();
+    //qmlRegisterType<DocumentsModel>()
 
     QGuiApplication app(argc, argv);
 

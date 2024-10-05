@@ -6,22 +6,21 @@ import QtQuick.Controls 6.2
 import notion_v2
 
 ApplicationWindow {
+    id: window
     width: 1920
     height: 1080
-    //Screen01 {
-     //   id: mainScreen
-    //}
-    id: window
+
     visible: true
+    title: "notion_simulaton"
 
-    DocsMenu {
-        id: docsMenu
+    DocChooserView {
+        id: docsChooserView
+        height: window.height / 2
+        width: window.width / 2
+
+        Component.onCompleted: {
+            console.log("pizda s chooserom")
+        }
     }
-
-//    Rectangle {
-//        color: "red"
-//        width: Constants.width
-//        height: Constants.height
-//    }
 }
 

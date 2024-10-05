@@ -13,6 +13,8 @@ if (Qt6_VERSION VERSION_GREATER_EQUAL 6.3)
     qt_standard_project_setup()
 endif()
 
+include_directories(src)
+
 qt_add_executable(notion_v2App
     src/main.cpp
     src/documentsmodel.h src/documentsmodel.cpp)
