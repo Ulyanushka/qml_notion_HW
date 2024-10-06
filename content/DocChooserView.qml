@@ -7,22 +7,29 @@ import notion_v2
 ListView {
     id: listView
 
-    focus: true
-    boundsBehavior: Flickable.VerticalFlick
-
-    delegate: DocToChooseDelegate {
-        id: delegate
-        width: listView.width
-        //height: 100
-
-        Component.onCompleted: {
-            console.log("pizda s delegatom")
-        }
-    }
-
     model: DocumentsModel {
         id: docsModel
     }
 
-    ScrollBar.vertical: ScrollBar { }
+    delegate: ItemDelegate {
+        id: delegate
+        width: listView.width
+
+        required property string title
+        required property string first_sentence
+        required property string path
+
+        contentItem: Label {
+            text: delegate.title
+            font.pixelSize: 60
+            font.bold: true
+
+            wrapMode: Text.Wrap
+            elide: Text.ElideRight
+
+            background: Rectangle {
+                color: "#dbd6ab"
+            }
+        }
+    }
 }
