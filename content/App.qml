@@ -14,32 +14,36 @@ Window {
     visible: true
     title: "notion_simulaton"
 
-    DocView {
-        id: docView
-        width: window.width * 4/5
-        height: window.height
-        anchors.topMargin: 300
-    }
-
-    Column { //choosing a doc to see
+    Column {
         spacing: 10
+        anchors.fill: parent
 
         Button { //opens DocChooserView
             id: btn
             height: 200
             text: "Docs List"
             font.pixelSize: 50
-            onClicked: {
-                docsChooserView.visible = !docsChooserView.visible
-            }
+            onClicked: popup.open()
         }
+
+        DocView {
+            id: docView
+            width: window.width * 4/5
+            height: window.height - btn.height - parent.spacing
+        }
+    }
+
+    Popup {
+        id: popup
+        parent: Overlay.overlay
+        y: btn.height
+        width: window.width * 1/2
+        height: window.height - btn.height
 
         DocChooserView {
             id: docsChooserView
-            width: window.width * 2/3
-            height: window.height * 2/3
+            anchors.fill: parent
             clip: true
-            visible: true
             onClicked: function(index) {
                 console.log("doc title clicked")
                 docView.displayDoc(docsChooserView.model.get(index))
