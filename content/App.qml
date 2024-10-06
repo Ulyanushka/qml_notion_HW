@@ -14,7 +14,14 @@ Window {
     visible: true
     title: "notion_simulaton"
 
-    Column {
+    DocView {
+        id: docView
+        width: window.width * 4/5
+        height: window.height
+        anchors.topMargin: 300
+    }
+
+    Column { //choosing a doc to see
         spacing: 10
 
         Button { //opens DocChooserView
@@ -27,15 +34,15 @@ Window {
             }
         }
 
-        Item {
+        DocChooserView {
+            id: docsChooserView
             width: window.width * 2/3
             height: window.height * 2/3
-
-            DocChooserView {
-                id: docsChooserView
-                anchors.fill: parent
-                clip: true
-                visible: true
+            clip: true
+            visible: true
+            onClicked: function(index) {
+                console.log("doc title clicked")
+                docView.displayDoc(docsChooserView.model.get(index))
             }
         }
     }

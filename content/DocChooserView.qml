@@ -18,7 +18,7 @@ ListView {
         id: docsModel
     }
 
-    signal pressAndHold(int index)
+    signal clicked(int index)
 
     delegate: ItemDelegate {
         id: delegate
@@ -28,7 +28,12 @@ ListView {
         required property string first_sentence
         required property string path
 
-        onPressAndHold: listView.pressAndHold(index)
+        required property int index
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: listView.onClicked(index)
+        }
 
         contentItem: Label {
             text: delegate.title

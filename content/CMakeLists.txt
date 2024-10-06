@@ -9,6 +9,7 @@ qt6_add_qml_module(content
         App.qml
         DocToChooseDelegate.qml
         DocChooserView.qml
+        DocView.qml
     RESOURCES
         fonts/fonts.txt
     SOURCES
