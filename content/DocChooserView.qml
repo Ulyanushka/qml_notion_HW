@@ -4,12 +4,21 @@ import QtQuick
 import QtQuick.Controls
 import notion_v2
 
+
 ListView {
     id: listView
+
+    ScrollBar.vertical: ScrollBar {
+        id: vScrollBar
+        width: 20
+        snapMode: ScrollBar.SnapAlways
+    }
 
     model: DocumentsModel {
         id: docsModel
     }
+
+    signal pressAndHold(int index)
 
     delegate: ItemDelegate {
         id: delegate
@@ -18,6 +27,8 @@ ListView {
         required property string title
         required property string first_sentence
         required property string path
+
+        onPressAndHold: listView.pressAndHold(index)
 
         contentItem: Label {
             text: delegate.title

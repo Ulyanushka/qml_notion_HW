@@ -6,6 +6,7 @@ import QtQuick.Controls 6.2
 import QtQuick.Layouts
 import notion_v2
 
+
 Window {
     id: window
     //width: 1920
@@ -39,4 +40,3 @@ Window {
         }
     }
 }
-
