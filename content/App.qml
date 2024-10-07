@@ -28,7 +28,7 @@ Window {
 
         DocView {
             id: docView
-            width: window.width * 4/5
+            width: window.width
             height: window.height - btn.height - parent.spacing
         }
     }
@@ -36,9 +36,9 @@ Window {
     Popup {
         id: popup
         parent: Overlay.overlay
-        y: btn.height
         width: window.width * 1/2
         height: window.height - btn.height
+        y: btn.height
 
         DocChooserView {
             id: docsChooserView
