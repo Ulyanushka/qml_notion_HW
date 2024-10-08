@@ -23,7 +23,6 @@ ListView {
     delegate: ItemDelegate {
         id: delegate
         width: listView.width
-        //highlighted: ListView.isCurrentItem
 
         required property string title
         required property string first_sentence

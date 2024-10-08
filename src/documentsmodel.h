@@ -3,6 +3,68 @@
 
 #include <QAbstractListModel>
 #include <QQmlEngine>
+#include <QVariant>
+
+
+class Block : QObject
+{
+    Q_OBJECT
+    QML_ELEMENT
+
+public:
+    enum BlockType {
+        Mesh,
+        H1Title,
+        H2Title,
+        H3Title,
+        Italic,
+        Bold,
+        Underline,
+        Link,
+        Image,
+        BulletList,
+        NumberedList,
+        HorizontalLine,
+        Blockquote,
+        InlineBlock, //no langs include
+        CodeBlock, //no langs include
+        GitHubTables,
+        GitHubTasks,
+        Tags, //hidden
+        QtQuickMediaPLayer,
+        HTML4Subset //stansart tool
+    };
+    Q_ENUM(BlockType)
+
+    Block(const BlockType& type, const QVariant& content, QObject* parent = nullptr);
+
+    Q_INVOKABLE BlockType GetType() const { return type_; }
+    Q_INVOKABLE QVariant GetContent() const { return content_; }
+
+private:
+    BlockType type_;
+    QVariant content_;
+};
+
+
+class NotionDocument : QObject
+{
+    Q_OBJECT
+    QML_ELEMENT
+
+public:
+    NotionDocument(const QString& title, const QString& file_path);
+
+    Q_INVOKABLE QString GetTitle() const { return title_; }
+    Q_INVOKABLE QList<Block> GetBlocks() const { return blocks_; }
+
+private:
+    void SetBlocks();
+
+    QString title_;
+    QString file_path_;
+    QList<Block> blocks_;
+};
 
 
 class DocumentsModel : public QAbstractListModel
@@ -49,8 +111,10 @@ private:
         QString title;
         QString first_sentence;
         QString path;
+
         //here should be the list of abstract blockss
     };
+
     QList<Document> documents_;
 };
 
