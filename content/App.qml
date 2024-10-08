@@ -45,7 +45,6 @@ Window {
             anchors.fill: parent
             clip: true
             onClicked: function(index) {
-                console.log("doc title clicked")
                 docView.displayDoc(docsChooserView.model.get(index))
             }
         }

@@ -23,6 +23,7 @@ ListView {
     delegate: ItemDelegate {
         id: delegate
         width: listView.width
+        //highlighted: ListView.isCurrentItem
 
         required property string title
         required property string first_sentence
@@ -30,12 +31,13 @@ ListView {
 
         required property int index
 
-        MouseArea {
-            anchors.fill: parent
-            onClicked: listView.onClicked(index)
+        onClicked: {
+            listView.currentIndex = index
+            listView.onClicked(index)
         }
 
         contentItem: Label {
+            id: contentItem
             text: delegate.title
             font.pixelSize: 60
             font.bold: true
@@ -44,7 +46,8 @@ ListView {
             elide: Text.ElideRight
 
             background: Rectangle {
-                color: "#dbd6ab"
+                id: backgroundRectangle
+                color: (delegate.ListView.isCurrentItem) ? "#f2a7d5" : "#dbd6ab"
             }
         }
     }

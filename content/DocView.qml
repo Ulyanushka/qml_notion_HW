@@ -15,7 +15,7 @@ Column {
 
     Text {
         id: docTitle
-        width: parent.width
+        width: parent.width - parent.leftPadding - parent.rightPadding
         text: "Title"
         font.pixelSize: 60
         font.bold: true
@@ -30,5 +30,6 @@ Column {
         font.pixelSize: 50
         wrapMode: Text.Wrap
         horizontalAlignment: Text.AlignJustify
+        readOnly: true
     }
 }
