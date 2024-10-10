@@ -19,33 +19,58 @@ Window {
         anchors.fill: parent
 
         Button { //opens DocChooserView
-            id: btn
+            id: btn_list
             height: 200
             text: "Docs List"
             font.pixelSize: 50
-            onClicked: popup.open()
+            onClicked: popup_list.open()
+        }
+
+        Button { //opens DocsTree
+            id: btn_tree
+            height: 200
+            text: "Docs Tree"
+            font.pixelSize: 50
+            onClicked: popup_tree.open()
         }
 
         DocView {
             id: docView
             width: window.width
-            height: window.height - btn.height - parent.spacing
+            height: { window.height
+                      - btn_list.height - btn_tree.height
+                      - parent.spacing
+            }
         }
     }
 
     Popup {
-        id: popup
+        id: popup_tree
         parent: Overlay.overlay
         width: window.width * 1/2
-        height: window.height - btn.height
-        y: btn.height
+        height: window.height - btn_list.height - btn_tree.height
+        y: btn_list.height + btn_tree.height
 
-        DocChooserView {
-            id: docsChooserView
+        DocsTree {
+            id: docsTree
+            anchors.fill: parent
+            clip: true
+        }
+    }
+
+    Popup {
+        id: popup_list
+        parent: Overlay.overlay
+        width: window.width * 1/2
+        height: window.height - btn_list.height - btn_tree.height
+        y: btn_list.height + btn_tree.height
+
+        DocChooserView{
+            id: docsChooser
             anchors.fill: parent
             clip: true
             onClicked: function(index) {
-                docView.displayDoc(docsChooserView.model.get(index))
+                docView.displayDoc(docsChooser.model.get(index))
             }
         }
     }
