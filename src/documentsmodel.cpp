@@ -1,20 +1,65 @@
 #include "documentsmodel.h"
 
-
-Block* NotionDocument::GetBlock(const int id) const
+/*
+QList<QVariantMap> Block::GetData() const
 {
-    if (id < 0 || id >= blocks_.size()) {
-        return nullptr;
+    QList<QVariantMap> content;
+    if (type_ == BlockType::Document) {
+        for (const auto& block : blocks_) {
+            content.append({{"type", QVariant::fromValue(block.GetType())},
+                            {"content", block.GetContent()}});
+        }
     }
-    return blocks_[id];
+    else if (type_ != BlockType::None) {
+        content.append({{"type", QVariant::fromValue(type_)},
+                        {"content", content_}});
+    }
+    return content;
+}*/
+
+/*
+Block* GetBlock(const QStringList& path, const QList<NotionDocument*>& documents)
+{
+    if (path.size() == 2) {
+        auto doc = GetDoc(path[0], documents);
+        if (doc != nullptr) {
+            for (const auto& block : doc->GetBlocks()) {
+                if (block->GetTitle() == path[1]) {
+                    return block;
+                }
+            }
+        }
+    }
+    return nullptr;
 }
 
-void NotionDocument::SetBlocks(const QString& file_path)
+NotionDocument* GetDoc(const QString& path, const QList<NotionDocument*>& documents)
 {
-    //setting logic
-}
+    for (const auto& doc : documents) {
+        if (doc->GetTitle() == path) {
+            return doc;
+        }
+    }
+    return nullptr;
+}*/
 
 //NEW_MODEL========================================================================================
+
+
+
+QList<QVariantMap> TreeItem::content() const
+{
+    QList<QVariantMap> data;
+    if (children_.empty()) {
+        for (const auto& child : children_) {
+            data.append(child->block_.GetContentMap());
+        }
+    }
+    else {
+        data.append(block_.GetContentMap());
+    }
+    return data;
+}
 
 int TreeItem::row() const
 {
@@ -32,26 +77,30 @@ int TreeItem::row() const
     return -1;
 }
 
-DocumentsTreeModel::DocumentsTreeModel(const QList<NotionDocument*> documents, QObject* parent)
-    : QAbstractItemModel(parent), root_(std::make_unique<TreeItem>("Title"))
+DocumentsTreeModel::DocumentsTreeModel(QObject* parent)
+    : QAbstractItemModel(parent), root_(std::make_unique<TreeItem>("Title", BlockData::Type::None))
 {
+    /*
     for(const auto& doc : documents) {
         auto doc_item = std::make_unique<TreeItem>(doc->GetTitle());
         for(const auto& block : doc->GetBlocks()) {
             doc_item->appendChild(std::make_unique<TreeItem>(block->GetTitle()));
         }
         root_->appendChild(std::move(doc_item));
-    }
+    }*/
 }
 
 QVariant DocumentsTreeModel::data(const QModelIndex& index, int role) const
 {
-    if (!index.isValid() || role != Qt::DisplayRole) {
-        return {};
+    if (!index.isValid()) {
+        auto item = static_cast<const TreeItem*>(index.internalPointer());
+        switch(role) {
+            case TitleRole:   return item->titleStr();
+            case ContentRole: return QVariant::fromValue(item->content());
+            default:          return QVariant();
+        }
     }
-
-    auto item = static_cast<const TreeItem*>(index.internalPointer());
-    return item->data();
+    return QVariant();
 }
 
 Qt::ItemFlags DocumentsTreeModel::flags(const QModelIndex& index) const
@@ -62,7 +111,7 @@ Qt::ItemFlags DocumentsTreeModel::flags(const QModelIndex& index) const
 
 QVariant DocumentsTreeModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
-    return (orientation == Qt::Horizontal && role == Qt::DisplayRole) ? root_->data()
+    return (orientation == Qt::Horizontal && role == Qt::DisplayRole) ? root_->titleStr()
                                                                       : QVariant{};
 }
 
@@ -104,17 +153,6 @@ int DocumentsTreeModel::rowCount(const QModelIndex& parent) const
                                          : root_.get();
 
     return parentItem->childCount();
-}
-
-QStringList DocumentsTreeModel::GetPath(const QModelIndex& index) const
-{
-    if (!index.isValid()) {
-        return {};
-    }
-
-    auto item = static_cast<TreeItem*>(index.internalPointer());
-    return (item->parent() == root_.get()) ? QStringList({item->data()})
-                                           : QStringList({item->parent()->data(), item->data()});
 }
 
 //OLD_MODEL========================================================================================

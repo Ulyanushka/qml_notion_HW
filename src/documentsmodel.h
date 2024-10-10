@@ -5,14 +5,65 @@
 #include <QQmlEngine>
 #include <QVariant>
 
-
+/*
 class Block : public QObject
 {
     Q_OBJECT
     QML_ELEMENT
 
 public:
-    enum BlockType {
+
+    Block(const QString& title, const QList<Block>& blocks,
+          const BlockType& type = Block::Document, QObject* parent = nullptr)
+        : QObject(parent), title_(title), type_(type), blocks_(blocks) {}
+
+    Block(const QString& title, const QVariant& content,
+          const BlockType& type = Block::None, QObject* parent = nullptr)
+        : QObject(parent), title_(title), type_(type), content_(content) {}
+
+    Q_INVOKABLE QString GetTitle() const { return title_; }
+    Q_INVOKABLE QList<QVariantMap> GetData() const;
+
+    BlockType GetType() const { return type_; }
+    QVariant GetContent() const { return content_; }
+
+private:
+    QString title_;
+    BlockType type_;
+    QVariant content_ = QVariant(); //for block
+    QList<Block> blocks_ = QList<Block>(); //for doc
+};*/
+
+/*
+class NotionDocument : public QObject
+{
+    Q_OBJECT
+    QML_ELEMENT
+
+public:
+    NotionDocument(const QString& title, const QString& file_path, QObject* parent = nullptr)
+        : QObject(parent), title_(title), file_path_(file_path) {}
+
+    NotionDocument(const QString& title, const QList<Block*> blocks, QObject* parent = nullptr)
+        : QObject(parent), title_(title), blocks_(blocks) {}
+
+    Q_INVOKABLE QString GetTitle() const { return title_; }
+    Q_INVOKABLE QList<Block*> GetBlocks() const { return blocks_; }
+    Q_INVOKABLE Block* GetBlock(const int id) const { return (id < 0 || id >= blocks_.size()) ? nullptr : blocks_[id]; }
+
+private:
+    QString title_;
+    QString file_path_;
+    QList<Block*> blocks_;
+};
+*/
+
+namespace BlockData
+{
+    Q_NAMESPACE
+    enum Type {
+        Document, //just a container for blocks
+        JustAText, //for tests only I think
         Mesh,
         H1Title,
         H2Title,
@@ -32,64 +83,50 @@ public:
         GitHubTasks,
         Tags, //hidden
         QtQuickMediaPLayer,
-        HTML4Subset //stansart tool
+        HTML4Subset, //stansart tool
+        None
     };
-    Q_ENUM(BlockType)
-
-    Block(const BlockType& type, const QVariant& content, QObject* parent = nullptr);
-
-    Q_INVOKABLE QString GetTitle() const { return title_; }
-    Q_INVOKABLE BlockType GetType() const { return type_; }
-    Q_INVOKABLE QVariant GetContent() const { return content_; }
-
-private:
-    QString title_;
-    BlockType type_;
-    QVariant content_;
-};
-
-
-class NotionDocument : public QObject
-{
-    Q_OBJECT
-    QML_ELEMENT
-
-public:
-    NotionDocument(const QString& title, const QString& file_path);
-
-    Q_INVOKABLE QString GetTitle() const { return title_; }
-    Q_INVOKABLE QList<Block*> GetBlocks() const { return blocks_; }
-    Q_INVOKABLE Block* GetBlock(const int id) const;
-
-private:
-    void SetBlocks(const QString& file_path);
-
-    QString title_;
-    //QString file_path_;
-    QList<Block*> blocks_;
-};
+    Q_ENUM_NS(Type)
+}
 
 
 class TreeItem
 {
 public:
-    explicit TreeItem(const QString& title, TreeItem* parent = nullptr)
-        : title_(title), parent_(parent) {}
+    explicit TreeItem(const QString& title, const BlockData::Type& type,
+                      const QVariant& content = QVariant(), TreeItem* parent = nullptr)
+        : block_(title, type, content), parent_(parent) {}
 
     TreeItem* parent() { return parent_; }
     TreeItem* child(int row) { return (row >= 0 && row < childCount()) ? children_.at(row).get() : nullptr; }
     void appendChild(std::unique_ptr<TreeItem>&& child) { children_.push_back(std::move(child)); }
     int childCount() const { return int(children_.size()); }
 
-    QString data() const { return title_; }
+    QString titleStr() const { return block_.title; }
+    QList<QVariantMap> content() const;
     int row() const;
 
 private:
+    struct Block {
+        Block(const QString& title, const BlockData::Type& type, const QVariant& content) {
+            this->title = title;
+            this->type = type;
+            this->content = content;
+        }
+        QVariantMap GetContentMap() const {
+            return{{"type", QVariant::fromValue(type)},
+                   {"content", content}};
+        }
+
+        QString title;
+        BlockData::Type type;
+        QVariant content;
+    };
+
     TreeItem* parent_;
     std::vector<std::unique_ptr<TreeItem>> children_;
-    QString title_;
+    Block block_;
 };
-
 
 class DocumentsTreeModel : public QAbstractItemModel
 {
@@ -97,22 +134,27 @@ class DocumentsTreeModel : public QAbstractItemModel
     QML_ELEMENT
 
 public:
+    enum DocumentRole {
+        TitleRole = Qt::DisplayRole,
+        ContentRole = Qt::UserRole,
+    };
+    Q_ENUM(DocumentRole)
+
     Q_DISABLE_COPY_MOVE(DocumentsTreeModel)
 
-    explicit DocumentsTreeModel(const QList<NotionDocument*> documents, QObject* parent = nullptr);
+    explicit DocumentsTreeModel(QObject* parent = nullptr);
     ~DocumentsTreeModel() override = default;
 
+    QVariant headerData(int section, Qt::Orientation orientation, int role = TitleRole) const override;
     Q_INVOKABLE QVariant data(const QModelIndex& index, int role) const override;
+
     Qt::ItemFlags flags(const QModelIndex& index) const override;
 
-    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     QModelIndex index(int row, int column, const QModelIndex& parent = {}) const override;
-    Q_INVOKABLE QModelIndex parent(const QModelIndex& index) const override;
+    QModelIndex parent(const QModelIndex& index) const override;
 
     int rowCount(const QModelIndex& parent = {}) const override;
     int columnCount(const QModelIndex& parent = {}) const override { return 1; }
-
-    Q_INVOKABLE QStringList GetPath(const QModelIndex& index) const;
 
 private:
     std::unique_ptr<TreeItem> root_;
@@ -163,8 +205,6 @@ private:
         QString title;
         QString first_sentence;
         QString path;
-
-        //here should be the list of abstract blockss
     };
 
     QList<Document> documents_;
