@@ -80,6 +80,7 @@ int TreeItem::row() const
 DocumentsTreeModel::DocumentsTreeModel(QObject* parent)
     : QAbstractItemModel(parent), root_(std::make_unique<TreeItem>("Title", BlockData::Type::None))
 {
+    MakeTestModel();
     /*
     for(const auto& doc : documents) {
         auto doc_item = std::make_unique<TreeItem>(doc->GetTitle());
@@ -88,6 +89,20 @@ DocumentsTreeModel::DocumentsTreeModel(QObject* parent)
         }
         root_->appendChild(std::move(doc_item));
     }*/
+}
+
+void DocumentsTreeModel::MakeTestModel()
+{
+    auto doc1 = std::make_unique<TreeItem>("Title1", BlockData::Type::Document);
+    doc1->appendChild(std::make_unique<TreeItem>("Block1_1", BlockData::JustAText, "text1"));
+    doc1->appendChild(std::make_unique<TreeItem>("Block2_1", BlockData::JustAText, "text2"));
+    root_->appendChild(std::move(doc1));
+
+    auto doc2 = std::make_unique<TreeItem>("Title1", BlockData::Type::Document);
+    doc2->appendChild(std::make_unique<TreeItem>("Block1_2", BlockData::JustAText, "text1"));
+    doc2->appendChild(std::make_unique<TreeItem>("Block2_2", BlockData::JustAText, "text2"));
+    doc2->appendChild(std::make_unique<TreeItem>("Block3_2", BlockData::JustAText, "text3"));
+    root_->appendChild(std::move(doc2));
 }
 
 QVariant DocumentsTreeModel::data(const QModelIndex& index, int role) const

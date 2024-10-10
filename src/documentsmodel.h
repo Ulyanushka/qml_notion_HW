@@ -157,6 +157,8 @@ public:
     int columnCount(const QModelIndex& parent = {}) const override { return 1; }
 
 private:
+    void MakeTestModel();
+
     std::unique_ptr<TreeItem> root_;
 };
 
