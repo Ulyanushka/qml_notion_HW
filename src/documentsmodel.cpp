@@ -1,6 +1,124 @@
 #include "documentsmodel.h"
 
 
+Block* NotionDocument::GetBlock(const int id) const
+{
+    if (id < 0 || id >= blocks_.size()) {
+        return nullptr;
+    }
+    return blocks_[id];
+}
+
+void NotionDocument::SetBlocks(const QString& file_path)
+{
+    //setting logic
+}
+
+//NEW_MODEL========================================================================================
+
+int TreeItem::row() const
+{
+    if (parent_ == nullptr) {
+        return 0;
+    }
+    const auto it = std::find_if(parent_->children_.cbegin(), parent_->children_.cend(),
+                                 [this](const std::unique_ptr<TreeItem>& treeItem) {
+                                     return treeItem.get() == this;
+                                 });
+    if (it != parent_->children_.cend()) {
+        return std::distance(parent_->children_.cbegin(), it);
+    }
+    Q_ASSERT(false); // should not happen
+    return -1;
+}
+
+DocumentsTreeModel::DocumentsTreeModel(const QList<NotionDocument*> documents, QObject* parent)
+    : QAbstractItemModel(parent), root_(std::make_unique<TreeItem>("Title"))
+{
+    for(const auto& doc : documents) {
+        auto doc_item = std::make_unique<TreeItem>(doc->GetTitle());
+        for(const auto& block : doc->GetBlocks()) {
+            doc_item->appendChild(std::make_unique<TreeItem>(block->GetTitle()));
+        }
+        root_->appendChild(std::move(doc_item));
+    }
+}
+
+QVariant DocumentsTreeModel::data(const QModelIndex& index, int role) const
+{
+    if (!index.isValid() || role != Qt::DisplayRole) {
+        return {};
+    }
+
+    auto item = static_cast<const TreeItem*>(index.internalPointer());
+    return item->data();
+}
+
+Qt::ItemFlags DocumentsTreeModel::flags(const QModelIndex& index) const
+{
+    return (index.isValid()) ? QAbstractItemModel::flags(index)
+                             : Qt::ItemFlags(Qt::NoItemFlags);
+}
+
+QVariant DocumentsTreeModel::headerData(int section, Qt::Orientation orientation, int role) const
+{
+    return (orientation == Qt::Horizontal && role == Qt::DisplayRole) ? root_->data()
+                                                                      : QVariant{};
+}
+
+QModelIndex DocumentsTreeModel::index(int row, int column, const QModelIndex& parent) const
+{
+    if (!hasIndex(row, column, parent)) {
+        return {};
+    }
+
+    auto parentItem = (parent.isValid()) ? static_cast<TreeItem*>(parent.internalPointer())
+                                         : root_.get();
+
+    if (auto* childItem = parentItem->child(row)) {
+        return createIndex(row, column, childItem);
+    }
+    return {};
+}
+
+QModelIndex DocumentsTreeModel::parent(const QModelIndex& index) const
+{
+    if (!index.isValid()) {
+        return {};
+    }
+
+    auto childItem = static_cast<TreeItem*>(index.internalPointer());
+    auto parentItem = childItem->parent();
+
+    return (parentItem != root_.get()) ? createIndex(parentItem->row(), 0, parentItem)
+                                       : QModelIndex{};
+}
+
+int DocumentsTreeModel::rowCount(const QModelIndex& parent) const
+{
+    if (parent.column() > 0) {
+        return 0;
+    }
+
+    auto parentItem = (parent.isValid()) ? static_cast<const TreeItem*>(parent.internalPointer())
+                                         : root_.get();
+
+    return parentItem->childCount();
+}
+
+QStringList DocumentsTreeModel::GetPath(const QModelIndex& index) const
+{
+    if (!index.isValid()) {
+        return {};
+    }
+
+    auto item = static_cast<TreeItem*>(index.internalPointer());
+    return (item->parent() == root_.get()) ? QStringList({item->data()})
+                                           : QStringList({item->parent()->data(), item->data()});
+}
+
+//OLD_MODEL========================================================================================
+
 const QList<QStringList> documents_start_data {
     {"Память, мозг, речь. Как мы понимаем местоимения?",
      "Когда речь заходит про общение и память, то наука в целом объясняет природу абстрактных образов, которыми мы обмениваемся друг с другом.",
@@ -35,7 +153,7 @@ const QList<QStringList> documents_start_data {
 };
 
 
-DocumentsModel::DocumentsModel(QObject* parent ) : QAbstractListModel(parent)
+DocumentsModel::DocumentsModel(QObject* parent) : QAbstractListModel(parent)
 {
     for (const auto& doc : documents_start_data) {
         documents_.append({doc[0], doc[1], doc[2]});

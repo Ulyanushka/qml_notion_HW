@@ -6,7 +6,7 @@
 #include <QVariant>
 
 
-class Block : QObject
+class Block : public QObject
 {
     Q_OBJECT
     QML_ELEMENT
@@ -38,16 +38,18 @@ public:
 
     Block(const BlockType& type, const QVariant& content, QObject* parent = nullptr);
 
+    Q_INVOKABLE QString GetTitle() const { return title_; }
     Q_INVOKABLE BlockType GetType() const { return type_; }
     Q_INVOKABLE QVariant GetContent() const { return content_; }
 
 private:
+    QString title_;
     BlockType type_;
     QVariant content_;
 };
 
 
-class NotionDocument : QObject
+class NotionDocument : public QObject
 {
     Q_OBJECT
     QML_ELEMENT
@@ -56,14 +58,36 @@ public:
     NotionDocument(const QString& title, const QString& file_path);
 
     Q_INVOKABLE QString GetTitle() const { return title_; }
-    Q_INVOKABLE QList<Block> GetBlocks() const { return blocks_; }
+    Q_INVOKABLE QList<Block*> GetBlocks() const { return blocks_; }
+    Q_INVOKABLE Block* GetBlock(const int id) const;
 
 private:
-    void SetBlocks();
+    void SetBlocks(const QString& file_path);
 
     QString title_;
-    QString file_path_;
-    QList<Block> blocks_;
+    //QString file_path_;
+    QList<Block*> blocks_;
+};
+
+
+class TreeItem
+{
+public:
+    explicit TreeItem(const QString& title, TreeItem* parent = nullptr)
+        : title_(title), parent_(parent) {}
+
+    TreeItem* parent() { return parent_; }
+    TreeItem* child(int row) { return (row >= 0 && row < childCount()) ? children_.at(row).get() : nullptr; }
+    void appendChild(std::unique_ptr<TreeItem>&& child) { children_.push_back(std::move(child)); }
+    int childCount() const { return int(children_.size()); }
+
+    QString data() const { return title_; }
+    int row() const;
+
+private:
+    TreeItem* parent_;
+    std::vector<std::unique_ptr<TreeItem>> children_;
+    QString title_;
 };
 
 
@@ -75,23 +99,23 @@ class DocumentsTreeModel : public QAbstractItemModel
 public:
     Q_DISABLE_COPY_MOVE(DocumentsTreeModel)
 
-//    explicit TreeModel(const QString &data, QObject *parent = nullptr);
-//    ~TreeModel() override;
+    explicit DocumentsTreeModel(const QList<NotionDocument*> documents, QObject* parent = nullptr);
+    ~DocumentsTreeModel() override = default;
 
-//    QVariant data(const QModelIndex &index, int role) const override;
-//    Qt::ItemFlags flags(const QModelIndex &index) const override;
-//    QVariant headerData(int section, Qt::Orientation orientation,
-//                        int role = Qt::DisplayRole) const override;
-//    QModelIndex index(int row, int column,
-//                      const QModelIndex &parent = {}) const override;
-//    QModelIndex parent(const QModelIndex &index) const override;
-//    int rowCount(const QModelIndex &parent = {}) const override;
-//    int columnCount(const QModelIndex &parent = {}) const override;
+    Q_INVOKABLE QVariant data(const QModelIndex& index, int role) const override;
+    Qt::ItemFlags flags(const QModelIndex& index) const override;
+
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+    QModelIndex index(int row, int column, const QModelIndex& parent = {}) const override;
+    Q_INVOKABLE QModelIndex parent(const QModelIndex& index) const override;
+
+    int rowCount(const QModelIndex& parent = {}) const override;
+    int columnCount(const QModelIndex& parent = {}) const override { return 1; }
+
+    Q_INVOKABLE QStringList GetPath(const QModelIndex& index) const;
 
 private:
-//    static void setupModelData(const QList<QStringView> &lines, TreeItem *parent);
-
-//    std::unique_ptr<TreeItem> rootItem;
+    std::unique_ptr<TreeItem> root_;
 };
 
 
