@@ -5,58 +5,6 @@
 #include <QQmlEngine>
 #include <QVariant>
 
-/*
-class Block : public QObject
-{
-    Q_OBJECT
-    QML_ELEMENT
-
-public:
-
-    Block(const QString& title, const QList<Block>& blocks,
-          const BlockType& type = Block::Document, QObject* parent = nullptr)
-        : QObject(parent), title_(title), type_(type), blocks_(blocks) {}
-
-    Block(const QString& title, const QVariant& content,
-          const BlockType& type = Block::None, QObject* parent = nullptr)
-        : QObject(parent), title_(title), type_(type), content_(content) {}
-
-    Q_INVOKABLE QString GetTitle() const { return title_; }
-    Q_INVOKABLE QList<QVariantMap> GetData() const;
-
-    BlockType GetType() const { return type_; }
-    QVariant GetContent() const { return content_; }
-
-private:
-    QString title_;
-    BlockType type_;
-    QVariant content_ = QVariant(); //for block
-    QList<Block> blocks_ = QList<Block>(); //for doc
-};*/
-
-/*
-class NotionDocument : public QObject
-{
-    Q_OBJECT
-    QML_ELEMENT
-
-public:
-    NotionDocument(const QString& title, const QString& file_path, QObject* parent = nullptr)
-        : QObject(parent), title_(title), file_path_(file_path) {}
-
-    NotionDocument(const QString& title, const QList<Block*> blocks, QObject* parent = nullptr)
-        : QObject(parent), title_(title), blocks_(blocks) {}
-
-    Q_INVOKABLE QString GetTitle() const { return title_; }
-    Q_INVOKABLE QList<Block*> GetBlocks() const { return blocks_; }
-    Q_INVOKABLE Block* GetBlock(const int id) const { return (id < 0 || id >= blocks_.size()) ? nullptr : blocks_[id]; }
-
-private:
-    QString title_;
-    QString file_path_;
-    QList<Block*> blocks_;
-};
-*/
 
 namespace BlockData
 {
@@ -101,6 +49,7 @@ public:
     TreeItem* child(int row) { return (row >= 0 && row < childCount()) ? children_.at(row).get() : nullptr; }
     void appendChild(std::unique_ptr<TreeItem>&& child) { children_.push_back(std::move(child)); }
     int childCount() const { return int(children_.size()); }
+    int columnCount() const { return 1; }
 
     QString titleStr() const { return block_.title; }
     QList<QVariantMap> content() const;
@@ -128,6 +77,9 @@ private:
     Block block_;
 };
 
+
+//TREE_MODEL=======================================================================================s
+
 class DocumentsTreeModel : public QAbstractItemModel
 {
     Q_OBJECT
@@ -145,7 +97,7 @@ public:
     explicit DocumentsTreeModel(QObject* parent = nullptr);
     ~DocumentsTreeModel() override = default;
 
-    QVariant headerData(int section, Qt::Orientation orientation, int role = TitleRole) const override;
+    Q_INVOKABLE QVariant headerData(int section, Qt::Orientation orientation, int role = TitleRole) const override;
     Q_INVOKABLE QVariant data(const QModelIndex& index, int role) const override;
 
     Qt::ItemFlags flags(const QModelIndex& index) const override;
@@ -162,6 +114,8 @@ private:
     std::unique_ptr<TreeItem> root_;
 };
 
+
+//LIST_MODEL=======================================================================================
 
 class DocumentsModel : public QAbstractListModel
 {
@@ -182,11 +136,10 @@ public:
     QHash<int, QByteArray> roleNames() const { return roles_; }
     int rowCount(const QModelIndex& = QModelIndex()) const { return documents_.count(); }
 
-    Q_INVOKABLE QVariantMap get(const int row) const { return documents_.value(row).GetData(); }
-
     Q_INVOKABLE void remove(const int row);
     Q_INVOKABLE void append(const QString& title, const QString& first_sentence, const QString& path);
     Q_INVOKABLE void set(const int row, const QString& title, const QString& first_sentence, const QString& path);
+    Q_INVOKABLE QVariantMap get(const int row) const { return documents_.value(row).GetData(); }
 
 private:
     const QHash<int, QByteArray> roles_ {

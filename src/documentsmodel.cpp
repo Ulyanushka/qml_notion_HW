@@ -1,50 +1,7 @@
 #include "documentsmodel.h"
 
-/*
-QList<QVariantMap> Block::GetData() const
-{
-    QList<QVariantMap> content;
-    if (type_ == BlockType::Document) {
-        for (const auto& block : blocks_) {
-            content.append({{"type", QVariant::fromValue(block.GetType())},
-                            {"content", block.GetContent()}});
-        }
-    }
-    else if (type_ != BlockType::None) {
-        content.append({{"type", QVariant::fromValue(type_)},
-                        {"content", content_}});
-    }
-    return content;
-}*/
 
-/*
-Block* GetBlock(const QStringList& path, const QList<NotionDocument*>& documents)
-{
-    if (path.size() == 2) {
-        auto doc = GetDoc(path[0], documents);
-        if (doc != nullptr) {
-            for (const auto& block : doc->GetBlocks()) {
-                if (block->GetTitle() == path[1]) {
-                    return block;
-                }
-            }
-        }
-    }
-    return nullptr;
-}
-
-NotionDocument* GetDoc(const QString& path, const QList<NotionDocument*>& documents)
-{
-    for (const auto& doc : documents) {
-        if (doc->GetTitle() == path) {
-            return doc;
-        }
-    }
-    return nullptr;
-}*/
-
-//NEW_MODEL========================================================================================
-
+//TREE_MODEL=======================================================================================
 
 
 QList<QVariantMap> TreeItem::content() const
@@ -81,14 +38,6 @@ DocumentsTreeModel::DocumentsTreeModel(QObject* parent)
     : QAbstractItemModel(parent), root_(std::make_unique<TreeItem>("Title", BlockData::Type::None))
 {
     MakeTestModel();
-    /*
-    for(const auto& doc : documents) {
-        auto doc_item = std::make_unique<TreeItem>(doc->GetTitle());
-        for(const auto& block : doc->GetBlocks()) {
-            doc_item->appendChild(std::make_unique<TreeItem>(block->GetTitle()));
-        }
-        root_->appendChild(std::move(doc_item));
-    }*/
 }
 
 void DocumentsTreeModel::MakeTestModel()
@@ -170,7 +119,8 @@ int DocumentsTreeModel::rowCount(const QModelIndex& parent) const
     return parentItem->childCount();
 }
 
-//OLD_MODEL========================================================================================
+
+//LIST_MODEL=======================================================================================
 
 const QList<QStringList> documents_start_data {
     {"Память, мозг, речь. Как мы понимаем местоимения?",

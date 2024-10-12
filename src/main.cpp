@@ -8,9 +8,16 @@
 #include "import_qml_components_plugins.h"
 #include "import_qml_plugins.h"
 
+//#include <QAbstractItemModelTester>
+//#include "documentsmodel.h"
+
+
 int main(int argc, char *argv[])
 {
     set_qt_environment();
+
+//    DocumentsTreeModel* model = new DocumentsTreeModel();
+//    new QAbstractItemModelTester(model);
 
     QGuiApplication app(argc, argv);
 

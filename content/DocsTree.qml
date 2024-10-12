@@ -13,10 +13,17 @@ TreeView {
         snapMode: ScrollBar.SnapAlways
     }
 
+    selectionModel: ItemSelectionModel {}
     model: DocumentsTreeModel {
         id: docsModel
     }
 
+    delegate: TreeViewDelegate {
+        id: delegate
+        width: treeView.width
+    }
+}
+    /*
     //signal clicked(int index)
 
     delegate: Item {
@@ -82,4 +89,4 @@ TreeView {
            text: model.display
        }
    }
-}
+}*/
