@@ -44,7 +44,7 @@ Window {
         }
     }
 
-    Popup {
+    Popup { //TREE
         id: popup_tree
         parent: Overlay.overlay
         width: window.width * 1/2
@@ -58,7 +58,7 @@ Window {
         }
     }
 
-    Popup {
+    Popup { //LIST
         id: popup_list
         parent: Overlay.overlay
         width: window.width * 1/2

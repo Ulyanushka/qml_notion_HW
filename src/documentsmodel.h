@@ -47,12 +47,13 @@ public:
 
     TreeItem* parent() { return parent_; }
     TreeItem* child(int row) { return (row >= 0 && row < childCount()) ? children_.at(row).get() : nullptr; }
+
     void appendChild(std::unique_ptr<TreeItem>&& child) { children_.push_back(std::move(child)); }
     int childCount() const { return int(children_.size()); }
     int columnCount() const { return 1; }
 
     QString titleStr() const { return block_.title; }
-    QList<QVariantMap> content() const;
+    QList<QVariantMap> contentListMap() const;
     int row() const;
 
 private:
@@ -100,6 +101,7 @@ public:
     Q_INVOKABLE QVariant headerData(int section, Qt::Orientation orientation, int role = TitleRole) const override;
     Q_INVOKABLE QVariant data(const QModelIndex& index, int role) const override;
 
+    QHash<int, QByteArray> roleNames() const override { return roles_; }
     Qt::ItemFlags flags(const QModelIndex& index) const override;
 
     QModelIndex index(int row, int column, const QModelIndex& parent = {}) const override;
@@ -110,6 +112,11 @@ public:
 
 private:
     void MakeTestModel();
+
+    const QHash<int, QByteArray> roles_ {
+        {TitleRole, "title"},
+        {ContentRole, "content"}
+    };
 
     std::unique_ptr<TreeItem> root_;
 };

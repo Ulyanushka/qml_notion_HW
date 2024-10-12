@@ -1,10 +1,63 @@
 #include "documentsmodel.h"
 
+const QList<QStringList> test_data {
+    {"Память, мозг, речь. Как мы понимаем местоимения?",
+     "Когда речь заходит про общение и память, то наука в целом объясняет природу абстрактных образов, которыми мы обмениваемся друг с другом.",
+     "https://habr.com/ru/articles/847480/"},
+    {"Шаблоны проектирования для баз данных",
+     "Существуют различные шаблоны проектирования облачных сервисов.",
+     "https://habr.com/ru/companies/otus/articles/843940/"},
+    {"От автоматонов до драконов: 9 ожидаемых игр осени 2024",
+     "В прошлом году выпустили рекордное количество успешных игр для ПК и консолей.",
+     "https://habr.com/ru/companies/skillfactory/articles/847452/"},
+    {"Бытие современного фуллстек-разработчика",
+     "Я живу на периферии технологической тусовки.",
+     "https://habr.com/ru/articles/457618/"},
+    {"Лучшее резюме из тех, что я видел",
+     "Позвольте мне рассказать историю о лучшем из виденных мною резюме облачного разработчика.",
+     "https://habr.com/ru/companies/sportmaster_lab/articles/848408/"},
+    {"Водные виды спорта как профилактика выгорания",
+     "Меня зовут Александр Федюнин, я Product Lead команды интернет-магазина «Спортмастер» 3.0.",
+     "https://habr.com/ru/companies/sportmaster_lab/articles/846524/"},
+    {"Почему курсор мыши наклонён на 45°?",
+     "Посетитель сайта вопросов-ответов StackExchange задал на первый взгляд глупый вопрос: а почему все курсоры во всех операционных системах немножко «кривые», то есть имеют определённый наклон, а не указывают прямо?",
+     "https://habr.com/ru/articles/212939/"},
+    {"Антарктика «зеленеет» с огромной скоростью",
+     "Растительный покров на Антарктическом полуострове за последние четыре десятилетия увеличился более чем в десять раз, показало новое исследование.",
+     "https://habr.com/ru/news/848254/"},
+    {"Напоминание: лотерея гринкард 2026 уже началась",
+     "С 2 октября и по 5 ноября продлится регистрация на розыгрыш гринкард 2026 года.",
+     "https://habr.com/ru/news/848458/"},
+    {"Google в тестовом режиме начал показывать в поиске галочку рядом с официальными ресурсами",
+     "Google экспериментирует с новой функцией проверки в поиске, которая должна помочь пользователям избежать перехода по поддельным или мошенническим ссылкам на веб-сайты.",
+     "https://habr.com/ru/news/848376/"}
+};
+
+enum {
+    kTitle = 0,
+    kText,
+    kLink
+};
+
+void DocumentsTreeModel::MakeTestModel()
+{
+    int i = 0;
+    for(const auto& data : test_data) {
+        root_->appendChild(std::make_unique<TreeItem>(data[kTitle], BlockData::Type::Document, "...", root_.get()));
+        root_->child(i)->appendChild(std::make_unique<TreeItem>("Text", BlockData::JustAText, data[kText], root_->child(i)));
+        root_->child(i)->appendChild(std::make_unique<TreeItem>("Link", BlockData::JustAText, data[kLink], root_->child(i)));
+        i++;
+    }
+
+//    root_->appendChild(std::make_unique<TreeItem>("Title_1", BlockData::Type::Document, "...", root_.get()));
+//    root_->child(0)->appendChild(std::make_unique<TreeItem>("T1_Block_1", BlockData::JustAText, "text1", root_->child(0)));
+//    root_->child(0)->appendChild(std::make_unique<TreeItem>("T1_Block_2", BlockData::JustAText, "text2", root_->child(0)));
+}
 
 //TREE_MODEL=======================================================================================
 
 
-QList<QVariantMap> TreeItem::content() const
+QList<QVariantMap> TreeItem::contentListMap() const
 {
     QList<QVariantMap> data;
     if (children_.empty()) {
@@ -40,27 +93,13 @@ DocumentsTreeModel::DocumentsTreeModel(QObject* parent)
     MakeTestModel();
 }
 
-void DocumentsTreeModel::MakeTestModel()
-{
-    auto doc1 = std::make_unique<TreeItem>("Title1", BlockData::Type::Document);
-    doc1->appendChild(std::make_unique<TreeItem>("Block1_1", BlockData::JustAText, "text1"));
-    doc1->appendChild(std::make_unique<TreeItem>("Block2_1", BlockData::JustAText, "text2"));
-    root_->appendChild(std::move(doc1));
-
-    auto doc2 = std::make_unique<TreeItem>("Title1", BlockData::Type::Document);
-    doc2->appendChild(std::make_unique<TreeItem>("Block1_2", BlockData::JustAText, "text1"));
-    doc2->appendChild(std::make_unique<TreeItem>("Block2_2", BlockData::JustAText, "text2"));
-    doc2->appendChild(std::make_unique<TreeItem>("Block3_2", BlockData::JustAText, "text3"));
-    root_->appendChild(std::move(doc2));
-}
-
 QVariant DocumentsTreeModel::data(const QModelIndex& index, int role) const
 {
-    if (!index.isValid()) {
+    if (index.isValid()) {
         auto item = static_cast<const TreeItem*>(index.internalPointer());
         switch(role) {
             case TitleRole:   return item->titleStr();
-            case ContentRole: return QVariant::fromValue(item->content());
+            case ContentRole: return QVariant::fromValue(item->contentListMap());
             default:          return QVariant();
         }
     }
@@ -100,8 +139,8 @@ QModelIndex DocumentsTreeModel::parent(const QModelIndex& index) const
         return {};
     }
 
-    auto childItem = static_cast<TreeItem*>(index.internalPointer());
-    auto parentItem = childItem->parent();
+    auto* childItem = static_cast<TreeItem*>(index.internalPointer());
+    TreeItem* parentItem = childItem->parent();
 
     return (parentItem != root_.get()) ? createIndex(parentItem->row(), 0, parentItem)
                                        : QModelIndex{};
@@ -122,44 +161,10 @@ int DocumentsTreeModel::rowCount(const QModelIndex& parent) const
 
 //LIST_MODEL=======================================================================================
 
-const QList<QStringList> documents_start_data {
-    {"Память, мозг, речь. Как мы понимаем местоимения?",
-     "Когда речь заходит про общение и память, то наука в целом объясняет природу абстрактных образов, которыми мы обмениваемся друг с другом.",
-     "https://habr.com/ru/articles/847480/"},
-    {"Шаблоны проектирования для баз данных",
-     "Существуют различные шаблоны проектирования облачных сервисов.",
-     "https://habr.com/ru/companies/otus/articles/843940/"},
-    {"От автоматонов до драконов: 9 ожидаемых игр осени 2024",
-     "В прошлом году выпустили рекордное количество успешных игр для ПК и консолей.",
-     "https://habr.com/ru/companies/skillfactory/articles/847452/"},
-    {"Бытие современного фуллстек-разработчика",
-     "Я живу на периферии технологической тусовки.",
-     "https://habr.com/ru/articles/457618/"},
-    {"Лучшее резюме из тех, что я видел",
-     "Позвольте мне рассказать историю о лучшем из виденных мною резюме облачного разработчика.",
-     "https://habr.com/ru/companies/sportmaster_lab/articles/848408/"},
-    {"Водные виды спорта как профилактика выгорания",
-     "Меня зовут Александр Федюнин, я Product Lead команды интернет-магазина «Спортмастер» 3.0.",
-     "https://habr.com/ru/companies/sportmaster_lab/articles/846524/"},
-    {"Почему курсор мыши наклонён на 45°?",
-     "Посетитель сайта вопросов-ответов StackExchange задал на первый взгляд глупый вопрос: а почему все курсоры во всех операционных системах немножко «кривые», то есть имеют определённый наклон, а не указывают прямо?",
-     "https://habr.com/ru/articles/212939/"},
-    {"Антарктика «зеленеет» с огромной скоростью",
-     "Растительный покров на Антарктическом полуострове за последние четыре десятилетия увеличился более чем в десять раз, показало новое исследование.",
-     "https://habr.com/ru/news/848254/"},
-    {"Напоминание: лотерея гринкард 2026 уже началась",
-     "С 2 октября и по 5 ноября продлится регистрация на розыгрыш гринкард 2026 года.",
-     "https://habr.com/ru/news/848458/"},
-    {"Google в тестовом режиме начал показывать в поиске галочку рядом с официальными ресурсами",
-     "Google экспериментирует с новой функцией проверки в поиске, которая должна помочь пользователям избежать перехода по поддельным или мошенническим ссылкам на веб-сайты.",
-     "https://habr.com/ru/news/848376/"}
-};
-
-
 DocumentsModel::DocumentsModel(QObject* parent) : QAbstractListModel(parent)
 {
-    for (const auto& doc : documents_start_data) {
-        documents_.append({doc[0], doc[1], doc[2]});
+    for (const auto& doc : test_data) {
+        documents_.append({doc[kTitle], doc[kText], doc[kLink]});
     }
 }
 
