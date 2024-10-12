@@ -54,7 +54,7 @@ Window {
         DocsTree {
             id: docsTree
             anchors.fill: parent
-            //clip: true
+            clip: true
             onSendBlockToView: function(data) {
                 docView.displayBlock(data)
             }
