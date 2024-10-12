@@ -64,7 +64,8 @@ private:
             this->content = content;
         }
         QVariantMap GetContentMap() const {
-            return{{"type", QVariant::fromValue(type)},
+            return{{"title", title},
+                   {"type", QVariant::fromValue(type)},
                    {"content", content}};
         }
 
@@ -88,8 +89,8 @@ class DocumentsTreeModel : public QAbstractItemModel
 
 public:
     enum DocumentRole {
-        TitleRole = Qt::DisplayRole,
-        ContentRole = Qt::UserRole,
+        TitleRole = Qt::UserRole + 1,
+        ContentRole,
     };
     Q_ENUM(DocumentRole)
 

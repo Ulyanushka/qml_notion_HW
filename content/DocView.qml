@@ -13,6 +13,22 @@ Column {
         docFirstSentence.text = document.first_sentence
     }
 
+    function displayBlock(block_data) {
+        console.log("!!!", block_data);
+        if(block_data.length === 1) {
+            docTitle.text = block_data[0].title
+            docFirstSentence.text = block_data[0].content
+        }
+        if(block_data.length > 1) {
+            docTitle.text = block_data[0].title
+            docFirstSentence.text = ""
+            for(var data of block_data) {
+                docFirstSentence.text += data.content
+                docFirstSentence.text += "\n"
+            }
+        }
+    }
+
     Text {
         id: docTitle
         width: parent.width - parent.leftPadding - parent.rightPadding

@@ -43,7 +43,7 @@ void DocumentsTreeModel::MakeTestModel()
 {
     int i = 0;
     for(const auto& data : test_data) {
-        root_->appendChild(std::make_unique<TreeItem>(data[kTitle], BlockData::Type::Document, "...", root_.get()));
+        root_->appendChild(std::make_unique<TreeItem>(data[kTitle], BlockData::Type::Document, "*Some pre words*", root_.get()));
         root_->child(i)->appendChild(std::make_unique<TreeItem>("Text", BlockData::JustAText, data[kText], root_->child(i)));
         root_->child(i)->appendChild(std::make_unique<TreeItem>("Link", BlockData::JustAText, data[kLink], root_->child(i)));
         i++;
@@ -60,13 +60,11 @@ void DocumentsTreeModel::MakeTestModel()
 QList<QVariantMap> TreeItem::contentListMap() const
 {
     QList<QVariantMap> data;
-    if (children_.empty()) {
+    data.append(block_.GetContentMap());
+    if (!children_.empty()) {
         for (const auto& child : children_) {
             data.append(child->block_.GetContentMap());
         }
-    }
-    else {
-        data.append(block_.GetContentMap());
     }
     return data;
 }

@@ -20,23 +20,28 @@ TreeView {
         id: docsModel
     }
 
-    //signal doubleClicked(QModelIndex index)
+    signal sendBlockToView(var content)
 
     delegate: TreeViewDelegate {
         id: delegate
         width: treeView.width
 
         required property string title
+        required property var content
 
         Component.onCompleted: {
-            console.log("-----------------", index, delegate.title)
+            //console.log("-----------------", index, delegate.title)
         }
 
         TapHandler {
             onSingleTapped: {
-                let index = treeView.index(row, column)
+                let index = treeView.index(row, 0)
+
                 treeView.selectionModel.setCurrentIndex(index, ItemSelectionModel.NoUpdate)
                 treeView.toggleExpanded(row)
+
+                console.log("-----------------", delegate.content)
+                sendBlockToView(delegate.content)
             }
         }
 
@@ -45,6 +50,7 @@ TreeView {
             text: delegate.title
             font.pixelSize: 60
             font.bold: true
+            width: treeView.width
 
             wrapMode: Text.Wrap
             elide: Text.ElideRight
