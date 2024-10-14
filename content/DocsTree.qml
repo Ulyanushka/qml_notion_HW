@@ -29,10 +29,6 @@ TreeView {
         required property string title
         required property var content
 
-        Component.onCompleted: {
-            //console.log("-----------------", index, delegate.title)
-        }
-
         TapHandler {
             onSingleTapped: {
                 let index = treeView.index(row, 0)
@@ -40,7 +36,6 @@ TreeView {
                 treeView.selectionModel.setCurrentIndex(index, ItemSelectionModel.NoUpdate)
                 treeView.toggleExpanded(row)
 
-                console.log("-----------------", delegate.content)
                 sendBlockToView(delegate.content)
             }
         }

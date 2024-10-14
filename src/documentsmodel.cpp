@@ -48,10 +48,6 @@ void DocumentsTreeModel::MakeTestModel()
         root_->child(i)->appendChild(std::make_unique<TreeItem>("Link", BlockData::JustAText, data[kLink], root_->child(i)));
         i++;
     }
-
-//    root_->appendChild(std::make_unique<TreeItem>("Title_1", BlockData::Type::Document, "...", root_.get()));
-//    root_->child(0)->appendChild(std::make_unique<TreeItem>("T1_Block_1", BlockData::JustAText, "text1", root_->child(0)));
-//    root_->child(0)->appendChild(std::make_unique<TreeItem>("T1_Block_2", BlockData::JustAText, "text2", root_->child(0)));
 }
 
 //TREE_MODEL=======================================================================================
