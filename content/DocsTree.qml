@@ -51,7 +51,7 @@ TreeView {
             font.pixelSize: 60
             font.bold: true
             width: treeView.width
-            rightPadding: 10
+            //rightPadding: 10
 
             wrapMode: Text.Wrap
             elide: Text.ElideRight
